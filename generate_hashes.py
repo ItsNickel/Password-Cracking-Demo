@@ -16,6 +16,18 @@ import csv
 import sys
 
 try:
+    from Crypto.Hash import MD4
+    def ntlm_hash(plaintext: str) -> str:
+        # NTLM = MD4 over UTF-16LE
+        h = MD4.new()
+        h.update(plaintext.encode('utf-16le'))
+        return h.hexdigest()
+except Exception:
+    # fallback in case Crypto isn't available (keeps previous behavior)
+    import hashlib
+    def ntlm_hash(plaintext: str) -> str:
+        return hashlib.new('md4', plaintext.encode('utf-16le')).hexdigest()
+try:
     import bcrypt
 except ImportError:
     print("bcrypt not installed. Install with: pip3 install bcrypt")
