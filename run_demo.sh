@@ -55,19 +55,20 @@ if command_exists hashcat; then
   fi
 fi
 
-# 3) John the Ripper (if installed) - raw-md5 + rules (tiny)
+# 3) John the Ripper (if installed) - try autodetect (safer)
 if command_exists john; then
-  echo "=== Running John the Ripper (MD5 + rules) ==="
+  echo "=== Running John the Ripper (autodetect) ==="
   HASH_FILE="$HASH_DIR/hashes_md5.txt"
   if [ -f "$HASH_FILE" ]; then
-    # John will create its own potfile; we run with the tiny wordlist and simple rules
-    john --wordlist="$SAMPLE_WORDLIST" --rules --format=raw-md5 "$HASH_FILE" || true
-    john --show --format=raw-md5 "$HASH_FILE" || true
-    john --show --format=raw-md5 "$HASH_FILE" > "$RESULTS_DIR/john_md5_show.txt" || true
+    # run with tiny wordlist + rules; let John detect the format
+    john --wordlist="$SAMPLE_WORDLIST" --rules "$HASH_FILE" || true
+    # save john's show output (plaintext:hash style)
+    john --show "$HASH_FILE" > "$RESULTS_DIR/john_md5_show.txt" 2>/dev/null || true
   fi
 else
   echo "John the Ripper not found — skipping John steps. (Install with: sudo apt install john)"
 fi
+
 
 # 4) Summarize results to results/cracked.csv (merge of outputs). This is a tiny best-effort merge.
 MERGED="$RESULTS_DIR/cracked.csv"
